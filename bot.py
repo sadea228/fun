@@ -8,7 +8,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 import asyncio
 from aiohttp import web, ClientSession
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from aiogram.types import Update, BotCommand
 
 from config import API_TOKEN, WEBHOOK_URL
