@@ -6,9 +6,9 @@ import random
 from aiogram.utils import exceptions
 
 import state
-from bot import bot
 
 async def reaction_loop():
+    from bot import bot
     try:
         while True:
             await asyncio.sleep(state.interval_seconds)
