@@ -21,15 +21,21 @@ from reactions import start_reactions
 WEBHOOK_PATH = f"/webhook/{API_TOKEN}"
 
 async def handle_webhook(request):
+    # Respond OK to non-POST requests (health checks / Telegram GET/HEAD)
+    if request.method != 'POST':
+        return web.Response(text="OK")
     data = await request.json()
-    print("<<< update:", data)
+    logging.info(f"<<< update: {data}")
     update = Update(**data)
     await dp.process_update(update)
     return web.Response(text="OK")
 
 async def on_startup(app):
     # Устанавливаем webhook и запускаем цикл реакций
-    await bot.set_webhook(url=WEBHOOK_URL + WEBHOOK_PATH)
+    # Нормализуем WEBHOOK_URL и логируем полную ссылку
+    webhook_url = WEBHOOK_URL.rstrip('/') + WEBHOOK_PATH
+    logging.info(f"Setting webhook to {webhook_url}")
+    await bot.set_webhook(url=webhook_url)
     # Регистрируем команды для автодополнения при вводе "/"
     commands = [
         BotCommand("add_reaction", "Добавить эмодзи в пул реакций"),
@@ -47,9 +53,14 @@ async def on_startup(app):
 async def on_shutdown(app):
     await bot.delete_webhook()
 
+# Добавим корневой обработчик для проверки статуса сервиса
+async def handle_root(request):
+    return web.Response(text="Bot is running")
+
 # Создаем приложение aiohttp
 app = web.Application()
-app.router.add_post(WEBHOOK_PATH, handle_webhook)
+app.router.add_route('*', '/', handle_root)
+app.router.add_route('*', WEBHOOK_PATH, handle_webhook)
 app.on_startup.append(on_startup)
 app.on_cleanup.append(on_shutdown)
 
