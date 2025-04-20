@@ -25,18 +25,25 @@ async def handle_webhook(request):
     # Respond OK to non-POST requests (health checks / Telegram GET/HEAD)
     if request.method != 'POST':
         return web.Response(text="OK")
-    data = await request.json()
-    logging.info(f"<<< update: {data}")
-    update = Update(**data)
-    await dp.process_update(update)
-    return web.Response(text="OK")
+    try:
+        data = await request.json()
+        logging.info(f"<<< update: {data}")
+        update = Update(**data)
+        await dp.process_update(update)
+        return web.Response(text="OK")
+    except Exception as e:
+        logging.error(f"Error processing update: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return web.Response(text="Error", status=500)
 
 async def on_startup(app):
     # Устанавливаем webhook и запускаем цикл реакций
     # Нормализуем WEBHOOK_URL и логируем полную ссылку
     webhook_url = WEBHOOK_URL.rstrip('/') + WEBHOOK_PATH
     logging.info(f"Setting webhook to {webhook_url}")
-    await bot.set_webhook(url=webhook_url)
+    # Сбрасываем все ожидающие обновления
+    await bot.set_webhook(url=webhook_url, drop_pending_updates=True)
     # Получаем информацию о webhook и логируем её
     info = await bot.get_webhook_info()
     logging.info(f"Webhook info: url={info.url}, pending_updates={info.pending_update_count}, last_error={info.last_error_message}, last_error_date={info.last_error_date}")
@@ -67,6 +74,12 @@ app.router.add_route('*', '/', handle_root)
 app.router.add_route('*', WEBHOOK_PATH, handle_webhook)
 app.on_startup.append(on_startup)
 app.on_cleanup.append(on_shutdown)
+
+# Добавим простой обработчик для любых сообщений
+@dp.message_handler()
+async def echo_message(message):
+    logging.info(f"Received message: {message.text} from {message.from_user.username or message.from_user.id}")
+    await message.reply(f"Вы написали: {message.text}")
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", "80"))
