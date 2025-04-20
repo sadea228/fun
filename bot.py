@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os
-print("DEBUG: bot.py loaded", f"BOT_TOKEN={'yes' if os.getenv('BOT_TOKEN') else 'no'}", f"WEBHOOK_URL={'yes' if os.getenv('WEBHOOK_URL') else 'no'}")
+print("DEBUG: bot.py loaded", f"BOT_TOKEN present: {'yes' if os.getenv('BOT_TOKEN') else 'no'}", f"WEBHOOK_URL present: {'yes' if os.getenv('WEBHOOK_URL') else 'no'}")
+print(f"WEBHOOK_URL value: {os.getenv('WEBHOOK_URL')}")
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 import asyncio
-from aiohttp import web
+from aiohttp import web, ClientSession
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update, BotCommand
 
@@ -80,6 +81,20 @@ app.on_cleanup.append(on_shutdown)
 async def echo_message(message):
     logging.info(f"Received message: {message.text} from {message.from_user.username or message.from_user.id}")
     await message.reply(f"Вы написали: {message.text}")
+
+# Добавим команду для тестирования активности бота
+@dp.message_handler(commands=['ping'])
+async def cmd_ping(message: types.Message):
+    logging.info("Ping command received")
+    await message.reply("Pong! Бот активен и реагирует на команды.")
+    # Тестируем соединение с Telegram API
+    async with ClientSession() as session:
+        async with session.get(f"https://api.telegram.org/bot{API_TOKEN}/getMe") as resp:
+            if resp.status == 200:
+                result = await resp.json()
+                await message.reply(f"Соединение с Telegram API в порядке. Ответ: {result}")
+            else:
+                await message.reply(f"Ошибка соединения с Telegram API: {resp.status}")
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", "80"))
