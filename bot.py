@@ -36,6 +36,9 @@ async def on_startup(app):
     webhook_url = WEBHOOK_URL.rstrip('/') + WEBHOOK_PATH
     logging.info(f"Setting webhook to {webhook_url}")
     await bot.set_webhook(url=webhook_url)
+    # Получаем информацию о webhook и логируем её
+    info = await bot.get_webhook_info()
+    logging.info(f"Webhook info: url={info.url}, pending_updates={info.pending_update_count}, last_error={info.last_error_message}, last_error_date={info.last_error_date}")
     # Регистрируем команды для автодополнения при вводе "/"
     commands = [
         BotCommand("add_reaction", "Добавить эмодзи в пул реакций"),
