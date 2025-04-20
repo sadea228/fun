@@ -5,7 +5,7 @@ import os
 import asyncio
 from aiohttp import web
 from aiogram import Bot, Dispatcher
-from aiogram.types import Update
+from aiogram.types import Update, BotCommand
 
 from config import API_TOKEN, WEBHOOK_URL
 import handlers  # регистрация хендлеров
@@ -26,6 +26,18 @@ async def handle_webhook(request):
 async def on_startup(app):
     # Устанавливаем webhook и запускаем цикл реакций
     await bot.set_webhook(url=WEBHOOK_URL + WEBHOOK_PATH)
+    # Регистрируем команды для автодополнения при вводе "/"
+    commands = [
+        BotCommand("add_reaction", "Добавить эмодзи в пул реакций"),
+        BotCommand("remove_reaction", "Удалить эмодзи из пула реакций"),
+        BotCommand("list_reactions", "Показать пул реакций"),
+        BotCommand("set_interval", "Установить интервал в секундах"),
+        BotCommand("ignore_user", "Игнорировать пользователя"),
+        BotCommand("unignore_user", "Убрать пользователя из игнор-листа"),
+        BotCommand("list_ignored", "Показать игнор-лист"),
+        BotCommand("restart_reactions", "Перезапустить таймер реакций"),
+    ]
+    await bot.set_my_commands(commands)
     await start_reactions()
 
 async def on_shutdown(app):
