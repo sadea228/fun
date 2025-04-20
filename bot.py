@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+print("DEBUG: bot.py loaded", f"BOT_TOKEN={'yes' if os.getenv('BOT_TOKEN') else 'no'}", f"WEBHOOK_URL={'yes' if os.getenv('WEBHOOK_URL') else 'no'}")
 import logging
 logging.basicConfig(level=logging.INFO)
 import asyncio
