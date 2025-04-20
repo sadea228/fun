@@ -12,7 +12,7 @@ import handlers  # регистрация хендлеров
 from reactions import start_reactions
 
 bot = Bot(token=API_TOKEN)
-dp = Dispatcher.bot
+dp = Dispatcher(bot)
 
 # Путь для вебхука
 WEBHOOK_PATH = f"/webhook/{API_TOKEN}"
