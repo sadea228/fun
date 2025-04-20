@@ -2,23 +2,27 @@
 # -*- coding: utf-8 -*-
 
 import os
+import logging
+logging.basicConfig(level=logging.INFO)
 import asyncio
 from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update, BotCommand
 
 from config import API_TOKEN, WEBHOOK_URL
-import handlers  # регистрация хендлеров
-from reactions import start_reactions
-
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
+
+# Регистрируем хендлеры и реакции после создания bot и dp, чтобы избежать circular import
+import handlers  # регистрация хендлеров
+from reactions import start_reactions
 
 # Путь для вебхука
 WEBHOOK_PATH = f"/webhook/{API_TOKEN}"
 
 async def handle_webhook(request):
     data = await request.json()
+    print("<<< update:", data)
     update = Update(**data)
     await dp.process_update(update)
     return web.Response(text="OK")
