@@ -115,4 +115,19 @@ async def cmd_restart_reactions(message: types.Message):
     if not is_admin(message):
         return
     await restart_reactions()
-    await message.reply("Таймер реакций перезапущен.") 
+    await message.reply("Таймер реакций перезапущен.")
+
+@dp.message_handler(commands=['start', 'help'])
+async def cmd_start_help(message: types.Message):
+    # Приветствие и список доступных команд
+    commands = [
+        "/add_reaction <emoji> — добавить эмодзи в пул реакций",
+        "/remove_reaction <emoji> — удалить эмодзи из пула",
+        "/list_reactions — показать все эмодзи",
+        "/set_interval <секунды> — установить интервал реакций",
+        "/ignore_user @username — игнорировать пользователя",
+        "/unignore_user @username — убрать пользователя из игнор-листа",
+        "/list_ignored — показать игнор-лист",
+        "/restart_reactions — перезапустить таймер реакций",
+    ]
+    await message.reply("Привет! Я бот-реагер. Вот мои команды:\n" + "\n".join(commands)) 
